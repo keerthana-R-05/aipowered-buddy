@@ -1,0 +1,1023 @@
+
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Study Buddy</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .typing-animation {
+            border-right: 2px solid #667eea;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { border-color: transparent; }
+            51%, 100% { border-color: #667eea; }
+        }
+        
+        .quiz-option {
+            transition: all 0.3s ease;
+        }
+        
+        .quiz-option:hover {
+            transform: translateY(-2px);
+        }
+        
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="min-h-full bg-gray-50">
+  <div class="min-h-full"><!-- Header -->
+   <header class="gradient-bg text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-6">
+     <div class="flex items-center justify-between">
+      <div>
+       <h1 id="app-title" class="text-3xl font-bold">AI Study Buddy</h1>
+       <p id="welcome-message" class="text-blue-100 mt-1">Your intelligent study companion</p>
+      </div>
+      <div class="flex items-center space-x-4">
+       <div class="bg-white bg-opacity-20 rounded-lg px-4 py-2"><span class="text-sm">📚 Study Sessions: <span id="session-count">0</span></span>
+       </div>
+      </div>
+     </div>
+    </div>
+   </header><!-- Navigation -->
+   <nav class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-4">
+     <div class="flex space-x-8"><button onclick="showModule('summarizer')" class="nav-btn py-4 px-6 text-gray-600 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 transition-colors font-medium"> 📝 Note Summarizer </button> <button onclick="showModule('quiz')" class="nav-btn py-4 px-6 text-gray-600 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 transition-colors font-medium"> 🧠 Quiz Generator </button> <button onclick="showModule('timetable')" class="nav-btn py-4 px-6 text-gray-600 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 transition-colors font-medium"> 📅 Study Planner </button> <button onclick="showModule('chatbot')" class="nav-btn py-4 px-6 text-gray-600 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 transition-colors font-medium"> 🤖 Study Chat </button>
+     </div>
+    </div>
+   </nav><!-- Main Content -->
+   <main class="max-w-7xl mx-auto px-4 py-8"><!-- Note Summarizer Module -->
+    <div id="summarizer-module" class="module">
+     <div class="bg-white rounded-xl card-shadow p-8">
+      <div class="flex items-center mb-6">
+       <div class="bg-blue-100 p-3 rounded-lg mr-4"><span class="text-2xl">📝</span>
+       </div>
+       <div>
+        <h2 class="text-2xl font-bold text-gray-800">Note Summarizer</h2>
+        <p class="text-gray-600">Transform lengthy study material into concise, key points</p>
+       </div>
+      </div>
+      <div class="grid md:grid-cols-2 gap-8">
+       <div><label for="note-input" class="block text-sm font-medium text-gray-700 mb-2">Paste your study material:</label> <textarea id="note-input" rows="12" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter your study notes, textbook content, or lecture material here..."></textarea>
+        <div class="mt-4 flex items-center space-x-4"><input type="text" id="note-subject" placeholder="Subject (e.g., Physics, History)" class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"> <button onclick="summarizeNotes()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"> Summarize Notes </button>
+        </div>
+       </div>
+       <div>
+        <div class="flex items-center justify-between mb-2"><label class="block text-sm font-medium text-gray-700">Summary:</label> <button id="save-summary-btn" onclick="saveSummary()" class="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-lg hover:bg-green-200 transition-colors" style="display: none;"> Save Summary </button>
+        </div>
+        <div id="summary-output" class="w-full h-80 p-4 border border-gray-300 rounded-lg bg-gray-50 overflow-y-auto">
+         <div class="text-gray-500 text-center mt-20"><span class="text-4xl mb-4 block">🤖</span> Your AI-generated summary will appear here
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- Quiz Generator Module -->
+    <div id="quiz-module" class="module hidden">
+     <div class="bg-white rounded-xl card-shadow p-8">
+      <div class="flex items-center mb-6">
+       <div class="bg-purple-100 p-3 rounded-lg mr-4"><span class="text-2xl">🧠</span>
+       </div>
+       <div>
+        <h2 class="text-2xl font-bold text-gray-800">Quiz Generator</h2>
+        <p class="text-gray-600">Generate practice questions from your study material</p>
+       </div>
+      </div>
+      <div class="grid md:grid-cols-2 gap-8">
+       <div><label for="quiz-input" class="block text-sm font-medium text-gray-700 mb-2">Study material for quiz:</label> <textarea id="quiz-input" rows="10" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Enter the content you want to create a quiz from..."></textarea>
+        <div class="mt-4 flex items-center space-x-4"><select id="quiz-difficulty" class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"> <option value="easy">Easy</option> <option value="medium" selected>Medium</option> <option value="hard">Hard</option> </select> <input type="number" id="quiz-count" min="3" max="10" value="5" class="w-20 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"> <button onclick="generateQuiz()" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium"> Generate Quiz </button>
+        </div>
+       </div>
+       <div>
+        <div class="flex items-center justify-between mb-2"><label class="block text-sm font-medium text-gray-700">Quiz Questions:</label>
+         <div id="quiz-progress" class="text-sm text-gray-600" style="display: none;">
+          Question <span id="current-question">1</span> of <span id="total-questions">5</span>
+         </div>
+        </div>
+        <div id="quiz-output" class="w-full h-80 border border-gray-300 rounded-lg bg-gray-50 overflow-y-auto">
+         <div class="text-gray-500 text-center mt-20 p-4"><span class="text-4xl mb-4 block">🎯</span> Your practice quiz will be generated here
+         </div>
+        </div>
+        <div id="quiz-results" class="mt-4 p-4 bg-blue-50 rounded-lg" style="display: none;">
+         <div class="flex items-center justify-between"><span class="font-medium">Quiz Score:</span> <span id="quiz-score" class="text-xl font-bold text-blue-600">0/0</span>
+         </div>
+         <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+          <div id="score-bar" class="bg-blue-600 h-2 rounded-full progress-bar" style="width: 0%"></div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- Timetable Planner Module -->
+    <div id="timetable-module" class="module hidden">
+     <div class="bg-white rounded-xl card-shadow p-8">
+      <div class="flex items-center mb-6">
+       <div class="bg-green-100 p-3 rounded-lg mr-4"><span class="text-2xl">📅</span>
+       </div>
+       <div>
+        <h2 class="text-2xl font-bold text-gray-800">Study Planner</h2>
+        <p class="text-gray-600">Create personalized study schedules for better time management</p>
+       </div>
+      </div>
+      <div class="grid md:grid-cols-2 gap-8">
+       <div>
+        <div class="space-y-4">
+         <div><label for="study-hours" class="block text-sm font-medium text-gray-700 mb-2">Daily study hours available:</label> <input type="number" id="study-hours" min="1" max="16" value="6" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+         </div>
+         <div><label class="block text-sm font-medium text-gray-700 mb-2">Subjects to study:</label>
+          <div id="subjects-list" class="space-y-2">
+           <div class="flex items-center space-x-2"><input type="text" placeholder="Subject name" class="flex-1 p-2 border border-gray-300 rounded-lg subject-input"> <input type="number" placeholder="Priority (1-5)" min="1" max="5" class="w-24 p-2 border border-gray-300 rounded-lg priority-input"> <button onclick="removeSubject(this)" class="text-red-500 hover:text-red-700 p-2">❌</button>
+           </div>
+          </div><button onclick="addSubject()" class="mt-2 text-green-600 hover:text-green-800 text-sm font-medium">+ Add Subject</button>
+         </div>
+         <div><label for="study-style" class="block text-sm font-medium text-gray-700 mb-2">Study style preference:</label> <select id="study-style" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"> <option value="balanced">Balanced (Equal time for all)</option> <option value="priority">Priority-based</option> <option value="intensive">Intensive (Longer sessions)</option> <option value="frequent">Frequent breaks</option> </select>
+         </div><button onclick="generateTimetable()" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-medium"> Generate Study Plan </button>
+        </div>
+       </div>
+       <div>
+        <div class="flex items-center justify-between mb-2"><label class="block text-sm font-medium text-gray-700">Your Study Schedule:</label> <button id="save-timetable-btn" onclick="saveTimetable()" class="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-lg hover:bg-green-200 transition-colors" style="display: none;"> Save Schedule </button>
+        </div>
+        <div id="timetable-output" class="w-full h-80 border border-gray-300 rounded-lg bg-gray-50 overflow-y-auto p-4">
+         <div class="text-gray-500 text-center mt-20"><span class="text-4xl mb-4 block">⏰</span> Your personalized study schedule will appear here
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- Chatbot Module -->
+    <div id="chatbot-module" class="module hidden">
+     <div class="bg-white rounded-xl card-shadow p-8">
+      <div class="flex items-center mb-6">
+       <div class="bg-indigo-100 p-3 rounded-lg mr-4"><span class="text-2xl">🤖</span>
+       </div>
+       <div>
+        <h2 class="text-2xl font-bold text-gray-800">Study Chat</h2>
+        <p class="text-gray-600">Get instant help with your academic queries</p>
+       </div>
+      </div>
+      <div class="max-w-4xl mx-auto">
+       <div id="chat-container" class="h-96 border border-gray-300 rounded-lg bg-gray-50 overflow-y-auto p-4 mb-4">
+        <div class="chat-message bot-message">
+         <div class="flex items-start space-x-3">
+          <div class="bg-indigo-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold"><span id="chatbot-avatar">SB</span>
+          </div>
+          <div class="bg-white rounded-lg p-3 shadow-sm max-w-md">
+           <p>Hello! I'm <span id="chatbot-display-name">StudyBot</span>, your AI study assistant. Ask me anything about your studies - from explaining concepts to helping with homework!</p>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="flex items-center space-x-4"><input type="text" id="chat-input" placeholder="Ask me anything about your studies..." class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" onkeypress="handleChatKeyPress(event)"> <button onclick="sendMessage()" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium"> Send </button>
+       </div>
+       <div class="mt-4 flex flex-wrap gap-2"><button onclick="sendQuickMessage('Explain photosynthesis')" class="text-sm bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition-colors"> Explain photosynthesis </button> <button onclick="sendQuickMessage('Help with algebra')" class="text-sm bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition-colors"> Help with algebra </button> <button onclick="sendQuickMessage('Study tips for exams')" class="text-sm bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition-colors"> Study tips for exams </button>
+       </div>
+      </div>
+     </div>
+    </div>
+   </main><!-- Saved Items Panel -->
+   <div id="saved-items" class="max-w-7xl mx-auto px-4 py-8">
+    <div class="bg-white rounded-xl card-shadow p-6">
+     <h3 class="text-xl font-bold text-gray-800 mb-4">📚 Your Saved Study Materials</h3>
+     <div id="saved-items-list" class="space-y-3"><!-- Saved items will be populated here -->
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+        // Global variables
+        let currentData = [];
+        let currentQuiz = [];
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+        let currentTimetable = null;
+        let sessionCount = 0;
+
+        // Default configuration
+        const defaultConfig = {
+            app_title: "AI Study Buddy",
+            welcome_message: "Your intelligent study companion",
+            chatbot_name: "StudyBot"
+        };
+
+        // Data handler for SDK
+        const dataHandler = {
+            onDataChanged(data) {
+                currentData = data;
+                updateSavedItemsList();
+                updateSessionCount();
+            }
+        };
+
+        // Element SDK configuration
+        const elementConfig = {
+            defaultConfig: defaultConfig,
+            onConfigChange: async (config) => {
+                const appTitle = config.app_title || defaultConfig.app_title;
+                const welcomeMessage = config.welcome_message || defaultConfig.welcome_message;
+                const chatbotName = config.chatbot_name || defaultConfig.chatbot_name;
+
+                document.getElementById('app-title').textContent = appTitle;
+                document.getElementById('welcome-message').textContent = welcomeMessage;
+                document.getElementById('chatbot-display-name').textContent = chatbotName;
+                document.getElementById('chatbot-avatar').textContent = chatbotName.substring(0, 2).toUpperCase();
+            },
+            mapToCapabilities: (config) => ({
+                recolorables: [],
+                borderables: [],
+                fontEditable: undefined,
+                fontSizeable: undefined
+            }),
+            mapToEditPanelValues: (config) => new Map([
+                ["app_title", config.app_title || defaultConfig.app_title],
+                ["welcome_message", config.welcome_message || defaultConfig.welcome_message],
+                ["chatbot_name", config.chatbot_name || defaultConfig.chatbot_name]
+            ])
+        };
+
+        // Initialize SDKs
+        async function initializeApp() {
+            try {
+                if (window.dataSdk) {
+                    const initResult = await window.dataSdk.init(dataHandler);
+                    if (!initResult.isOk) {
+                        console.error("Failed to initialize data SDK");
+                    }
+                }
+
+                if (window.elementSdk) {
+                    window.elementSdk.init(elementConfig);
+                }
+            } catch (error) {
+                console.error("Initialization error:", error);
+            }
+        }
+
+        // Navigation
+        function showModule(moduleName) {
+            // Hide all modules
+            document.querySelectorAll('.module').forEach(module => {
+                module.classList.add('hidden');
+            });
+            
+            // Remove active state from all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-blue-600', 'border-blue-600');
+                btn.classList.add('text-gray-600', 'border-transparent');
+            });
+            
+            // Show selected module
+            document.getElementById(moduleName + '-module').classList.remove('hidden');
+            
+            // Add active state to clicked button
+            event.target.classList.remove('text-gray-600', 'border-transparent');
+            event.target.classList.add('text-blue-600', 'border-blue-600');
+        }
+
+        // Note Summarizer Functions
+        function summarizeNotes() {
+            const input = document.getElementById('note-input').value.trim();
+            const subject = document.getElementById('note-subject').value.trim();
+            
+            if (!input) {
+                showInlineMessage('Please enter some study material to summarize.', 'error');
+                return;
+            }
+
+            const outputDiv = document.getElementById('summary-output');
+            outputDiv.innerHTML = '<div class="text-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div><p class="mt-2 text-gray-600">Analyzing and summarizing your notes...</p></div>';
+
+            // Simulate AI processing
+            setTimeout(() => {
+                const summary = generateSummary(input);
+                displaySummary(summary, subject);
+                document.getElementById('save-summary-btn').style.display = 'block';
+            }, 2000);
+        }
+
+        function generateSummary(text) {
+            // Simple NLP-like summarization simulation
+            const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 10);
+            const words = text.toLowerCase().split(/\s+/);
+            
+            // Extract key terms (words that appear frequently)
+            const wordCount = {};
+            words.forEach(word => {
+                if (word.length > 4 && !['that', 'this', 'with', 'from', 'they', 'have', 'been', 'were', 'will', 'would', 'could', 'should'].includes(word)) {
+                    wordCount[word] = (wordCount[word] || 0) + 1;
+                }
+            });
+
+            const keyTerms = Object.entries(wordCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 8)
+                .map(([word]) => word);
+
+            // Score sentences based on key terms
+            const scoredSentences = sentences.map(sentence => {
+                const score = keyTerms.reduce((acc, term) => {
+                    return acc + (sentence.toLowerCase().includes(term) ? 1 : 0);
+                }, 0);
+                return { sentence: sentence.trim(), score };
+            });
+
+            // Select top sentences
+            const topSentences = scoredSentences
+                .sort((a, b) => b.score - a.score)
+                .slice(0, Math.min(5, Math.ceil(sentences.length * 0.3)))
+                .map(item => item.sentence);
+
+            return {
+                keyPoints: topSentences,
+                keyTerms: keyTerms.slice(0, 5),
+                originalLength: words.length,
+                summaryLength: topSentences.join(' ').split(' ').length
+            };
+        }
+
+        function displaySummary(summary, subject) {
+            const outputDiv = document.getElementById('summary-output');
+            
+            const html = `
+                <div class="fade-in">
+                    <div class="mb-4 p-3 bg-blue-50 rounded-lg">
+                        <h4 class="font-semibold text-blue-800 mb-2">📊 Summary Statistics</h4>
+                        <div class="text-sm text-blue-700">
+                            <p>Original: ${summary.originalLength} words → Summary: ${summary.summaryLength} words</p>
+                            <p>Compression: ${Math.round((1 - summary.summaryLength / summary.originalLength) * 100)}%</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-semibold text-gray-800 mb-2">🔑 Key Points:</h4>
+                        <ul class="space-y-2">
+                            ${summary.keyPoints.map(point => `
+                                <li class="flex items-start space-x-2">
+                                    <span class="text-blue-500 mt-1">•</span>
+                                    <span class="text-gray-700">${point}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-800 mb-2">🏷️ Key Terms:</h4>
+                        <div class="flex flex-wrap gap-2">
+                            ${summary.keyTerms.map(term => `
+                                <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-lg text-sm">${term}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            outputDiv.innerHTML = html;
+        }
+
+        async function saveSummary() {
+            const input = document.getElementById('note-input').value.trim();
+            const subject = document.getElementById('note-subject').value.trim() || 'General';
+            const summaryContent = document.getElementById('summary-output').innerHTML;
+            
+            if (!window.dataSdk) return;
+
+            const summaryData = {
+                id: Date.now().toString(),
+                type: 'summary',
+                title: `${subject} - Summary`,
+                content: summaryContent,
+                subject: subject,
+                createdAt: new Date().toISOString(),
+                metadata: JSON.stringify({ originalLength: input.length })
+            };
+
+            const result = await window.dataSdk.create(summaryData);
+            if (result.isOk) {
+                showInlineMessage('Summary saved successfully!', 'success');
+                document.getElementById('save-summary-btn').style.display = 'none';
+            } else {
+                showInlineMessage('Failed to save summary. Please try again.', 'error');
+            }
+        }
+
+        // Quiz Generator Functions
+        function generateQuiz() {
+            const input = document.getElementById('quiz-input').value.trim();
+            const difficulty = document.getElementById('quiz-difficulty').value;
+            const count = parseInt(document.getElementById('quiz-count').value);
+            
+            if (!input) {
+                showInlineMessage('Please enter study material to generate quiz from.', 'error');
+                return;
+            }
+
+            const outputDiv = document.getElementById('quiz-output');
+            outputDiv.innerHTML = '<div class="text-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div><p class="mt-2 text-gray-600">Generating quiz questions...</p></div>';
+
+            setTimeout(() => {
+                currentQuiz = createQuizQuestions(input, difficulty, count);
+                currentQuizIndex = 0;
+                quizScore = 0;
+                displayQuizQuestion();
+                document.getElementById('quiz-progress').style.display = 'block';
+                document.getElementById('total-questions').textContent = currentQuiz.length;
+            }, 1500);
+        }
+
+        function createQuizQuestions(text, difficulty, count) {
+            const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 20);
+            const questions = [];
+            
+            // Question templates based on difficulty
+            const templates = {
+                easy: [
+                    "What is {concept}?",
+                    "Define {concept}.",
+                    "{concept} refers to what?"
+                ],
+                medium: [
+                    "Explain the relationship between {concept1} and {concept2}.",
+                    "How does {concept} affect {process}?",
+                    "What are the main characteristics of {concept}?"
+                ],
+                hard: [
+                    "Analyze the implications of {concept} in {context}.",
+                    "Compare and contrast {concept1} with {concept2}.",
+                    "Evaluate the significance of {concept} in modern {field}."
+                ]
+            };
+
+            // Extract key concepts
+            const words = text.toLowerCase().split(/\s+/);
+            const concepts = words.filter(word => word.length > 5 && !['however', 'therefore', 'because', 'through', 'between'].includes(word));
+            
+            for (let i = 0; i < count && i < sentences.length; i++) {
+                const sentence = sentences[i].trim();
+                const concept = concepts[Math.floor(Math.random() * concepts.length)];
+                
+                // Generate question
+                const template = templates[difficulty][Math.floor(Math.random() * templates[difficulty].length)];
+                const question = template.replace('{concept}', concept).replace('{concept1}', concept).replace('{concept2}', concepts[Math.floor(Math.random() * concepts.length)]);
+                
+                // Generate options
+                const correctAnswer = sentence.substring(0, 100) + (sentence.length > 100 ? '...' : '');
+                const options = [
+                    correctAnswer,
+                    generateWrongAnswer(text, 1),
+                    generateWrongAnswer(text, 2),
+                    generateWrongAnswer(text, 3)
+                ].sort(() => Math.random() - 0.5);
+                
+                questions.push({
+                    question: question,
+                    options: options,
+                    correct: options.indexOf(correctAnswer),
+                    explanation: `This relates to the concept of ${concept} mentioned in your study material.`
+                });
+            }
+            
+            return questions;
+        }
+
+        function generateWrongAnswer(text, variant) {
+            const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 20);
+            const randomSentence = sentences[Math.floor(Math.random() * sentences.length)];
+            
+            const wrongAnswers = [
+                "This is not directly related to the main concept.",
+                "This represents a different aspect of the topic.",
+                "This is a common misconception about the subject.",
+                randomSentence.substring(0, 80) + "..."
+            ];
+            
+            return wrongAnswers[variant] || wrongAnswers[0];
+        }
+
+        function displayQuizQuestion() {
+            if (currentQuizIndex >= currentQuiz.length) {
+                showQuizResults();
+                return;
+            }
+
+            const question = currentQuiz[currentQuizIndex];
+            const outputDiv = document.getElementById('quiz-output');
+            
+            const html = `
+                <div class="fade-in p-4">
+                    <div class="mb-4">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-3">Question ${currentQuizIndex + 1}:</h4>
+                        <p class="text-gray-700 mb-4">${question.question}</p>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        ${question.options.map((option, index) => `
+                            <button onclick="selectAnswer(${index})" class="quiz-option w-full text-left p-3 border border-gray-300 rounded-lg hover:bg-purple-50 hover:border-purple-300 transition-all">
+                                <span class="font-medium">${String.fromCharCode(65 + index)}.</span> ${option}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            outputDiv.innerHTML = html;
+            document.getElementById('current-question').textContent = currentQuizIndex + 1;
+        }
+
+        function selectAnswer(selectedIndex) {
+            const question = currentQuiz[currentQuizIndex];
+            const isCorrect = selectedIndex === question.correct;
+            
+            if (isCorrect) {
+                quizScore++;
+            }
+            
+            // Show feedback
+            const buttons = document.querySelectorAll('.quiz-option');
+            buttons.forEach((btn, index) => {
+                btn.disabled = true;
+                if (index === question.correct) {
+                    btn.classList.add('bg-green-100', 'border-green-500', 'text-green-800');
+                } else if (index === selectedIndex && !isCorrect) {
+                    btn.classList.add('bg-red-100', 'border-red-500', 'text-red-800');
+                }
+            });
+            
+            // Show explanation and next button
+            setTimeout(() => {
+                const outputDiv = document.getElementById('quiz-output');
+                outputDiv.innerHTML += `
+                    <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                        <p class="text-sm text-blue-800">${question.explanation}</p>
+                        <button onclick="nextQuestion()" class="mt-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                            ${currentQuizIndex + 1 < currentQuiz.length ? 'Next Question' : 'Show Results'}
+                        </button>
+                    </div>
+                `;
+            }, 1000);
+        }
+
+        function nextQuestion() {
+            currentQuizIndex++;
+            displayQuizQuestion();
+        }
+
+        function showQuizResults() {
+            const percentage = Math.round((quizScore / currentQuiz.length) * 100);
+            
+            document.getElementById('quiz-results').style.display = 'block';
+            document.getElementById('quiz-score').textContent = `${quizScore}/${currentQuiz.length}`;
+            document.getElementById('score-bar').style.width = `${percentage}%`;
+            
+            const outputDiv = document.getElementById('quiz-output');
+            outputDiv.innerHTML = `
+                <div class="text-center py-8 fade-in">
+                    <div class="text-6xl mb-4">${percentage >= 80 ? '🎉' : percentage >= 60 ? '👍' : '📚'}</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Quiz Complete!</h3>
+                    <p class="text-gray-600 mb-4">You scored ${quizScore} out of ${currentQuiz.length} questions</p>
+                    <div class="text-lg font-semibold ${percentage >= 80 ? 'text-green-600' : percentage >= 60 ? 'text-yellow-600' : 'text-red-600'}">
+                        ${percentage >= 80 ? 'Excellent!' : percentage >= 60 ? 'Good job!' : 'Keep studying!'}
+                    </div>
+                    <button onclick="resetQuiz()" class="mt-4 bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                        Take Another Quiz
+                    </button>
+                </div>
+            `;
+        }
+
+        function resetQuiz() {
+            document.getElementById('quiz-results').style.display = 'none';
+            document.getElementById('quiz-progress').style.display = 'none';
+            document.getElementById('quiz-output').innerHTML = `
+                <div class="text-gray-500 text-center mt-20 p-4">
+                    <span class="text-4xl mb-4 block">🎯</span>
+                    Your practice quiz will be generated here
+                </div>
+            `;
+        }
+
+        // Timetable Functions
+        function addSubject() {
+            const subjectsList = document.getElementById('subjects-list');
+            const newSubject = document.createElement('div');
+            newSubject.className = 'flex items-center space-x-2';
+            newSubject.innerHTML = `
+                <input type="text" placeholder="Subject name" class="flex-1 p-2 border border-gray-300 rounded-lg subject-input">
+                <input type="number" placeholder="Priority (1-5)" min="1" max="5" class="w-24 p-2 border border-gray-300 rounded-lg priority-input">
+                <button onclick="removeSubject(this)" class="text-red-500 hover:text-red-700 p-2">❌</button>
+            `;
+            subjectsList.appendChild(newSubject);
+        }
+
+        function removeSubject(button) {
+            button.parentElement.remove();
+        }
+
+        function generateTimetable() {
+            const studyHours = parseInt(document.getElementById('study-hours').value);
+            const studyStyle = document.getElementById('study-style').value;
+            
+            const subjects = [];
+            document.querySelectorAll('#subjects-list > div').forEach(div => {
+                const name = div.querySelector('.subject-input').value.trim();
+                const priority = parseInt(div.querySelector('.priority-input').value) || 3;
+                if (name) {
+                    subjects.push({ name, priority });
+                }
+            });
+            
+            if (subjects.length === 0) {
+                showInlineMessage('Please add at least one subject to create a timetable.', 'error');
+                return;
+            }
+
+            const outputDiv = document.getElementById('timetable-output');
+            outputDiv.innerHTML = '<div class="text-center py-8"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div><p class="mt-2 text-gray-600">Creating your personalized study schedule...</p></div>';
+
+            setTimeout(() => {
+                currentTimetable = createStudySchedule(studyHours, subjects, studyStyle);
+                displayTimetable(currentTimetable);
+                document.getElementById('save-timetable-btn').style.display = 'block';
+            }, 1500);
+        }
+
+        function createStudySchedule(totalHours, subjects, style) {
+            const schedule = [];
+            const timeSlots = [];
+            
+            // Create time slots
+            let currentTime = 9; // Start at 9 AM
+            const sessionLength = style === 'intensive' ? 2 : style === 'frequent' ? 0.5 : 1;
+            const breakLength = style === 'frequent' ? 0.25 : 0.5;
+            
+            while (timeSlots.reduce((sum, slot) => sum + slot.duration, 0) < totalHours) {
+                const remaining = totalHours - timeSlots.reduce((sum, slot) => sum + slot.duration, 0);
+                const duration = Math.min(sessionLength, remaining);
+                
+                if (duration > 0) {
+                    timeSlots.push({
+                        start: currentTime,
+                        end: currentTime + duration,
+                        duration: duration
+                    });
+                    currentTime += duration + breakLength;
+                }
+                
+                if (currentTime >= 22) break; // Don't go past 10 PM
+            }
+            
+            // Assign subjects to time slots
+            let subjectIndex = 0;
+            const sortedSubjects = [...subjects].sort((a, b) => {
+                if (style === 'priority') return b.priority - a.priority;
+                return 0;
+            });
+            
+            timeSlots.forEach((slot, index) => {
+                const subject = sortedSubjects[subjectIndex % sortedSubjects.length];
+                schedule.push({
+                    time: `${formatTime(slot.start)} - ${formatTime(slot.end)}`,
+                    subject: subject.name,
+                    duration: slot.duration,
+                    priority: subject.priority,
+                    activity: generateActivity(subject.name, slot.duration)
+                });
+                
+                if (style === 'balanced') {
+                    subjectIndex++;
+                } else {
+                    subjectIndex = Math.floor(index / 2) % sortedSubjects.length;
+                }
+            });
+            
+            return {
+                schedule: schedule,
+                totalTime: totalHours,
+                subjects: subjects.length,
+                style: style
+            };
+        }
+
+        function formatTime(hour) {
+            const h = Math.floor(hour);
+            const m = Math.round((hour - h) * 60);
+            const period = h >= 12 ? 'PM' : 'AM';
+            const displayHour = h > 12 ? h - 12 : h === 0 ? 12 : h;
+            return `${displayHour}:${m.toString().padStart(2, '0')} ${period}`;
+        }
+
+        function generateActivity(subject, duration) {
+            const activities = {
+                short: ['Review notes', 'Quick practice', 'Flashcards'],
+                medium: ['Chapter reading', 'Problem solving', 'Concept mapping'],
+                long: ['Deep study session', 'Project work', 'Comprehensive review']
+            };
+            
+            const type = duration <= 0.5 ? 'short' : duration <= 1 ? 'medium' : 'long';
+            return activities[type][Math.floor(Math.random() * activities[type].length)];
+        }
+
+        function displayTimetable(timetable) {
+            const outputDiv = document.getElementById('timetable-output');
+            
+            const html = `
+                <div class="fade-in">
+                    <div class="mb-4 p-3 bg-green-50 rounded-lg">
+                        <h4 class="font-semibold text-green-800 mb-2">📋 Schedule Overview</h4>
+                        <div class="text-sm text-green-700">
+                            <p>Total Study Time: ${timetable.totalTime} hours</p>
+                            <p>Subjects: ${timetable.subjects} | Style: ${timetable.style}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        ${timetable.schedule.map((item, index) => `
+                            <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
+                                <div class="flex items-center space-x-3">
+                                    <div class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">
+                                        ${item.time}
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-800">${item.subject}</div>
+                                        <div class="text-sm text-gray-600">${item.activity}</div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                                        ${item.duration}h
+                                    </span>
+                                    <div class="flex">
+                                        ${Array(item.priority).fill('⭐').join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                        <p class="text-sm text-blue-800">💡 <strong>Tip:</strong> Take 15-30 minute breaks between sessions and stay hydrated!</p>
+                    </div>
+                </div>
+            `;
+            
+            outputDiv.innerHTML = html;
+        }
+
+        async function saveTimetable() {
+            if (!currentTimetable || !window.dataSdk) return;
+
+            const timetableData = {
+                id: Date.now().toString(),
+                type: 'timetable',
+                title: `Study Schedule - ${new Date().toLocaleDateString()}`,
+                content: JSON.stringify(currentTimetable),
+                subject: 'Schedule',
+                createdAt: new Date().toISOString(),
+                metadata: JSON.stringify({ 
+                    totalHours: currentTimetable.totalTime,
+                    subjects: currentTimetable.subjects,
+                    style: currentTimetable.style
+                })
+            };
+
+            const result = await window.dataSdk.create(timetableData);
+            if (result.isOk) {
+                showInlineMessage('Study schedule saved successfully!', 'success');
+                document.getElementById('save-timetable-btn').style.display = 'none';
+            } else {
+                showInlineMessage('Failed to save schedule. Please try again.', 'error');
+            }
+        }
+
+        // Chatbot Functions
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addChatMessage(message, 'user');
+            input.value = '';
+            
+            // Simulate typing
+            setTimeout(() => {
+                const response = generateChatResponse(message);
+                addChatMessage(response, 'bot');
+            }, 1000);
+        }
+
+        function sendQuickMessage(message) {
+            document.getElementById('chat-input').value = message;
+            sendMessage();
+        }
+
+        function addChatMessage(message, sender) {
+            const container = document.getElementById('chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}-message mb-4`;
+            
+            if (sender === 'user') {
+                messageDiv.innerHTML = `
+                    <div class="flex items-start space-x-3 justify-end">
+                        <div class="bg-blue-500 text-white rounded-lg p-3 shadow-sm max-w-md">
+                            <p>${message}</p>
+                        </div>
+                        <div class="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                            U
+                        </div>
+                    </div>
+                `;
+            } else {
+                const chatbotName = window.elementSdk?.config?.chatbot_name || defaultConfig.chatbot_name;
+                const avatar = chatbotName.substring(0, 2).toUpperCase();
+                
+                messageDiv.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <div class="bg-indigo-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                            ${avatar}
+                        </div>
+                        <div class="bg-white rounded-lg p-3 shadow-sm max-w-md typing-animation">
+                            <p>${message}</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+            
+            // Remove typing animation after a moment
+            if (sender === 'bot') {
+                setTimeout(() => {
+                    messageDiv.querySelector('.typing-animation').classList.remove('typing-animation');
+                }, 2000);
+            }
+        }
+
+        function generateChatResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            // Knowledge base responses
+            const responses = {
+                photosynthesis: "Photosynthesis is the process by which plants convert sunlight, carbon dioxide, and water into glucose and oxygen. The equation is: 6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂. This process occurs in chloroplasts and is essential for life on Earth!",
+                
+                algebra: "Algebra is about finding unknown values using equations. Key concepts include: variables (like x, y), coefficients (numbers before variables), and operations. Start with simple equations like 2x + 3 = 7, then solve by isolating x: 2x = 4, so x = 2. Practice with different types of equations!",
+                
+                "study tips": "Here are effective study techniques: 1) Use active recall - test yourself instead of just re-reading, 2) Space out your learning over time, 3) Use the Pomodoro Technique (25 min study, 5 min break), 4) Create mind maps for complex topics, 5) Teach concepts to others, 6) Get enough sleep and exercise!",
+                
+                "time management": "Effective time management for students: 1) Use a planner or digital calendar, 2) Prioritize tasks using the Eisenhower Matrix, 3) Break large projects into smaller tasks, 4) Set specific study goals, 5) Eliminate distractions during study time, 6) Schedule regular breaks and rewards!",
+                
+                "exam preparation": "Exam prep strategy: 1) Start early - don't cram, 2) Create a study schedule, 3) Use past papers and practice tests, 4) Form study groups, 5) Focus on understanding, not memorizing, 6) Get good sleep before exams, 7) Stay calm and confident during the test!",
+                
+                "note taking": "Effective note-taking methods: 1) Cornell Method - divide page into notes, cues, and summary, 2) Mind mapping for visual learners, 3) Outline method for structured topics, 4) Use abbreviations and symbols, 5) Review and revise notes within 24 hours, 6) Use colors and highlighting strategically!"
+            };
+            
+            // Check for specific topics
+            for (const [topic, response] of Object.entries(responses)) {
+                if (lowerMessage.includes(topic)) {
+                    return response;
+                }
+            }
+            
+            // Subject-specific responses
+            if (lowerMessage.includes('math') || lowerMessage.includes('mathematics')) {
+                return "Mathematics is all about patterns and problem-solving! Start with understanding the fundamentals, practice regularly, and don't be afraid to make mistakes - they're part of learning. What specific math topic would you like help with?";
+            }
+            
+            if (lowerMessage.includes('science') || lowerMessage.includes('physics') || lowerMessage.includes('chemistry') || lowerMessage.includes('biology')) {
+                return "Science is fascinating! It's about understanding how the world works. Use experiments, diagrams, and real-world examples to make concepts stick. Break complex topics into smaller parts and connect them to everyday life. What science topic interests you?";
+            }
+            
+            if (lowerMessage.includes('history')) {
+                return "History is about understanding cause and effect, patterns, and human behavior over time. Create timelines, use mnemonics for dates, and try to understand the 'why' behind events, not just the 'what'. What historical period are you studying?";
+            }
+            
+            if (lowerMessage.includes('english') || lowerMessage.includes('literature')) {
+                return "English and literature develop critical thinking and communication skills. Read actively, take notes on themes and characters, practice writing regularly, and discuss ideas with others. What type of literature or writing are you working on?";
+            }
+            
+            // General helpful responses
+            const generalResponses = [
+                "That's a great question! Can you provide more specific details about what you're studying? I'd love to help you understand the concept better.",
+                
+                "I'm here to help with your studies! Whether it's explaining concepts, study strategies, or exam preparation, feel free to ask specific questions.",
+                
+                "Learning is a journey! Remember that everyone learns at their own pace. What specific topic or subject would you like assistance with?",
+                
+                "Great to see you're actively studying! The key to success is consistent effort and asking questions when you need help. What can I explain for you today?",
+                
+                "I'm your study buddy! I can help explain concepts, suggest study methods, create practice questions, or provide motivation. What do you need help with?"
+            ];
+            
+            return generalResponses[Math.floor(Math.random() * generalResponses.length)];
+        }
+
+        // Utility Functions
+        function updateSavedItemsList() {
+            const listDiv = document.getElementById('saved-items-list');
+            
+            if (currentData.length === 0) {
+                listDiv.innerHTML = '<p class="text-gray-500 text-center py-4">No saved items yet. Create summaries, quizzes, or schedules to see them here!</p>';
+                return;
+            }
+            
+            const html = currentData.map(item => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl">
+                            ${item.type === 'summary' ? '📝' : item.type === 'quiz' ? '🧠' : '📅'}
+                        </span>
+                        <div>
+                            <div class="font-medium text-gray-800">${item.title}</div>
+                            <div class="text-sm text-gray-600">${item.subject} • ${new Date(item.createdAt).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    <button onclick="deleteItem('${item.__backendId}')" class="text-red-500 hover:text-red-700 p-2">
+                        🗑️
+                    </button>
+                </div>
+            `).join('');
+            
+            listDiv.innerHTML = html;
+        }
+
+        async function deleteItem(backendId) {
+            if (!window.dataSdk) return;
+            
+            const item = currentData.find(d => d.__backendId === backendId);
+            if (!item) return;
+            
+            const result = await window.dataSdk.delete(item);
+            if (result.isOk) {
+                showInlineMessage('Item deleted successfully!', 'success');
+            } else {
+                showInlineMessage('Failed to delete item. Please try again.', 'error');
+            }
+        }
+
+        function updateSessionCount() {
+            sessionCount = currentData.length;
+            document.getElementById('session-count').textContent = sessionCount;
+        }
+
+        function showInlineMessage(message, type) {
+            // Create toast message
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg text-white ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            } fade-in`;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Initialize app when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
+            
+            // Set default active module
+            showModule('summarizer');
+            document.querySelector('button[onclick="showModule(\'summarizer\')"]').classList.add('text-blue-600', 'border-blue-600');
+            document.querySelector('button[onclick="showModule(\'summarizer\')"]').classList.remove('text-gray-600', 'border-transparent');
+        });
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9962e96b509da855',t:'MTc2MTc0MzQxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
